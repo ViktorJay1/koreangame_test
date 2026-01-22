@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>한국어 모음 소리-글자 매칭 게임</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="game" aria-live="polite">
+      <header class="game__header">
+        <h1 class="game__title">모음 소리 맞히기</h1>
+        <button class="listen" type="button" aria-label="다시 듣기">
+          <span aria-hidden="true">🔊</span>
+          다시 듣기
+        </button>
+      </header>
+      <section class="choices" aria-label="모음 선택">
+        <button class="choice" type="button"></button>
+        <button class="choice" type="button"></button>
+        <button class="choice" type="button"></button>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
