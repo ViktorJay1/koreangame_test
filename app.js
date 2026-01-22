@@ -7,6 +7,7 @@ const choices = Array.from(document.querySelectorAll(".choice"));
 const replayBtn = document.getElementById("replay");
 let correctVowel = "";
 let isLocked = false;
+let isTransitioning = false;
 
 function shuffle(list) {
   const array = [...list];
@@ -19,6 +20,7 @@ function shuffle(list) {
 
 function pickRound() {
   isLocked = true;
+  isTransitioning = false;
   clearFeedback();
   const [correct, wrong1, wrong2] = shuffle(vowels).slice(0, 3);
   correctVowel = correct;
@@ -63,14 +65,19 @@ function speakVowel(vowel) {
 }
 
 function handleChoice(event) {
-  if (isLocked) return;
   const picked = event.currentTarget.dataset.vowel;
   if (!picked) return;
+  if (isTransitioning) return;
+  if (isLocked && picked !== correctVowel) {
+    speakVowel(picked);
+    return;
+  }
   isLocked = true;
   speakVowel(picked);
 
   if (picked === correctVowel) {
     event.currentTarget.classList.add("good");
+    isTransitioning = true;
     speakVowel(correctVowel).finally(() => {
       const delay = 600 + Math.floor(Math.random() * 401);
       setTimeout(() => {
@@ -87,11 +94,8 @@ function handleChoice(event) {
 }
 
 replayBtn.addEventListener("click", () => {
-  if (isLocked) return;
-  isLocked = true;
-  speakVowel(correctVowel).finally(() => {
-    isLocked = false;
-  });
+  if (isTransitioning) return;
+  speakVowel(correctVowel);
 });
 
 choices.forEach(btn => {
