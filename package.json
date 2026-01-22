@@ -1,0 +1,9 @@
+{
+  "name": "koreangame-test",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Korean vowel sound-to-letter matching game (Level 1)",
+  "scripts": {
+    "dev": "python -m http.server 8000"
+  }
+}
