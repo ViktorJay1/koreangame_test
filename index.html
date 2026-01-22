@@ -1,0 +1,30 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>모음 소리-글자 매칭 Level 1</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="stage" aria-live="polite">
+    <div class="brand">
+      <span class="chip">KOR VOWEL LAB</span>
+      <h1>Level 1 모음 매칭</h1>
+      <button id="replay" class="replay" type="button" aria-label="다시 듣기">🔊</button>
+    </div>
+
+    <section class="board" role="group" aria-label="모음 선택">
+      <button class="choice" type="button" data-idx="0"></button>
+      <button class="choice" type="button" data-idx="1"></button>
+      <button class="choice" type="button" data-idx="2"></button>
+    </section>
+
+    <div class="status" aria-hidden="true">
+      <span id="pulse" class="pulse"></span>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
