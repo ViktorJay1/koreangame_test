@@ -4,26 +4,30 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Empareja vocales Nivel 1</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=1" />
 </head>
 <body>
   <main class="stage" aria-live="polite">
     <div class="brand">
       <h1>Empareja vocales Nivel 1</h1>
-      <button id="replay" class="replay" type="button" aria-label="다시 듣기">🔊</button>
+      <button id="replayBtn" class="replay" type="button" aria-label="다시 듣기">🔊</button>
     </div>
 
     <section class="board" role="group" aria-label="모음 선택">
-      <button class="choice" type="button" data-idx="0"></button>
-      <button class="choice" type="button" data-idx="1"></button>
-      <button class="choice" type="button" data-idx="2"></button>
+      <button class="choice choiceBtn" type="button" data-idx="0"></button>
+      <button class="choice choiceBtn" type="button" data-idx="1"></button>
+      <button class="choice choiceBtn" type="button" data-idx="2"></button>
     </section>
 
     <div class="status" aria-hidden="true">
       <span id="pulse" class="pulse"></span>
     </div>
   </main>
+  <!-- <div id="debug" style="position:fixed;left:8px;bottom:8px;max-width:92vw;
+padding:8px 10px;background:rgba(0,0,0,.6);color:#fff;font:12px/1.4 monospace;
+border-radius:8px;z-index:9999;white-space:pre-wrap;"></div> -->
 
-  <script src="app.js"></script>
+
+  <script src="app.js?v=1 defer"></script>
 </body>
 </html>

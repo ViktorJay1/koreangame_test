@@ -1,4 +1,25 @@
-﻿const vowelEntries = [
+﻿/* =========================================================
+   Debug overlay helpers (mobile-friendly)
+   ========================================================= */
+// const dbgEl = () => document.getElementById("debug");
+// function dbg(...args) {
+//   const el = dbgEl();
+//   if (!el) return;
+//   el.textContent =
+//     `[${new Date().toLocaleTimeString()}] ${args.join(" ")}\n` + el.textContent;
+// }
+// window.addEventListener("error", (e) => dbg("JS ERROR:", e.message));
+// window.addEventListener("unhandledrejection", (e) =>
+//   dbg("PROMISE ERROR:", String(e.reason))
+// );
+
+// 잘 될 때는 아래 살리고, 디버그창 살리려면 위 주석 해제
+function dbg() {}
+
+/* =========================================================
+   Data
+   ========================================================= */
+const vowelEntries = [
   { key: "a", label: "ㅏ" },
   { key: "ya", label: "ㅑ" },
   { key: "eo", label: "ㅓ" },
@@ -17,12 +38,13 @@
   { key: "wo", label: "ㅝ" },
   { key: "we", label: "ㅞ" },
   { key: "wi", label: "ㅟ" },
-  { key: "ui", label: "ㅢ" }
+  { key: "ui", label: "ㅢ" },
 ];
 
 const voicePacks = {
   ko: {
-    basePath: "audio/ko/vowels",
+    // 반드시 ./ 로 시작 (상대경로 꼬임 방지)
+    basePath: "./audio/ko/vowels",
     files: {
       a: "a.m4a",
       ya: "ya.m4a",
@@ -37,24 +59,40 @@ const voicePacks = {
       ae: "ae.m4a",
       e: "e.m4a",
       wa: "wa.m4a",
+      // 중요: 오타 수정 (wae는 wae.m4a)
       wae: "wae.m4a",
       oe: "oe.m4a",
       wo: "wo.m4a",
       we: "we.m4a",
       wi: "wi.m4a",
-      ui: "ui.m4a"
-    }
-  }
+      ui: "ui.m4a",
+    },
+  },
 };
 
 let activePack = "ko";
 
-const choices = Array.from(document.querySelectorAll(".choice"));
-const replayBtn = document.getElementById("replay");
+/* =========================================================
+   State
+   ========================================================= */
+let choices = [];
+let replayBtn = null;
+
 let correctKey = "";
 let isLocked = false;
 let isTransitioning = false;
 
+// 모바일에서 자동재생 정책 회피:
+// 사용자가 한번이라도 터치/클릭하면 그때부터 자동재생 허용으로 간주
+let userInteracted = false;
+
+const coarsePointerQuery = window.matchMedia
+  ? window.matchMedia("(pointer: coarse), (hover: none)")
+  : null;
+
+/* =========================================================
+   Utils
+   ========================================================= */
 function shuffle(list) {
   const array = [...list];
   for (let i = array.length - 1; i > 0; i -= 1) {
@@ -66,87 +104,289 @@ function shuffle(list) {
 
 function getAudioUrl(key) {
   const pack = voicePacks[activePack];
-  if (!pack || !pack.files[key]) return null;
-  return `${pack.basePath}/${pack.files[key]}`;
+  if (!pack) return null;
+  const filename = pack.files[key];
+  if (!filename) return null;
+  return `${pack.basePath}/${filename}`;
 }
 
-function playVowel(key) {
-  return new Promise(resolve => {
+/* =========================================================
+   Audio (single player + stop previous)
+   ========================================================= */
+let player = null;
+function ensurePlayer() {
+  if (!player) {
+    player = new Audio();
+    player.preload = "auto";
+    // iOS 대응 속성 (안드로이드에도 무해)
+    player.playsInline = true;
+  }
+  return player;
+}
+
+function stopAudio() {
+  if (!player) return;
+  try {
+    player.pause();
+    player.currentTime = 0;
+  } catch (_) {}
+}
+
+function playVowel(key, { force = false, waitEnd = false } = {}) {
+  return new Promise((resolve) => {
     const src = getAudioUrl(key);
     if (!src) {
-      resolve();
+      dbg("audio missing for key:", key);
+      resolve(false);
       return;
     }
 
-    const audio = new Audio(src);
-    audio.onended = () => resolve();
-    audio.onerror = () => resolve();
-    audio.play().catch(() => resolve());
+    // 자동재생은 첫 터치 전에는 막힐 수 있음
+    if (!userInteracted && !force) {
+      dbg("autoplay blocked until user gesture. key:", key);
+      resolve(false);
+      return;
+    }
+
+    const a = ensurePlayer();
+    let resolved = false;
+    const finish = (ok) => {
+      if (resolved) return;
+      resolved = true;
+      resolve(ok);
+    };
+
+    stopAudio();
+    a.src = src;
+
+    a.onended = () => finish(true);
+    a.onerror = () => {
+      dbg("audio error:", src);
+      finish(false);
+    };
+
+    a.play()
+      .then(() => {
+        dbg("audio playing:", src);
+        if (!waitEnd) finish(true);
+      })
+      .catch(() => {
+        dbg("audio play rejected (policy). src:", src);
+        finish(false);
+      });
   });
 }
 
+/* =========================================================
+   Focus / Tap highlight mitigation (mobile)
+   ========================================================= */
+function applyMobileTabIndex() {
+  const isMobile = coarsePointerQuery && coarsePointerQuery.matches;
+  const value = isMobile ? "-1" : null;
+
+  choices.forEach((btn) => {
+    if (!btn) return;
+    if (value) btn.setAttribute("tabindex", value);
+    else btn.removeAttribute("tabindex");
+  });
+
+  if (replayBtn) {
+    if (value) replayBtn.setAttribute("tabindex", value);
+    else replayBtn.removeAttribute("tabindex");
+  }
+}
+
+function blurAllFocus() {
+  try {
+    if (document.activeElement && typeof document.activeElement.blur === "function") {
+      document.activeElement.blur();
+    }
+  } catch (_) {}
+
+  choices.forEach((btn) => {
+    try {
+      if (btn && typeof btn.blur === "function") btn.blur();
+    } catch (_) {}
+  });
+
+  try {
+    if (replayBtn && typeof replayBtn.blur === "function") replayBtn.blur();
+  } catch (_) {}
+}
+
+function afterRenderBlur() {
+  blurAllFocus();
+  requestAnimationFrame(() => blurAllFocus());
+  setTimeout(() => blurAllFocus(), 30);
+}
+
+/* =========================================================
+   UI helpers
+   ========================================================= */
+function clearFeedback() {
+  choices.forEach((btn) => {
+    if (!btn) return;
+    btn.classList.remove("good", "bad", "active", "selected", "correct", "wrong");
+  });
+}
+
+function renderChoices(entries3) {
+  entries3.forEach((entry, idx) => {
+    const btn = choices[idx];
+    if (!btn) return;
+    btn.textContent = entry.label;
+    btn.dataset.key = entry.key;
+  });
+
+  dbg(
+    "rendered:",
+    choices.map((b) => b.textContent || "(empty)").join(" ")
+  );
+}
+
+/* =========================================================
+   Round logic
+   ========================================================= */
 function pickRound() {
   isLocked = true;
   isTransitioning = false;
+
+  if (choices.length !== 3) {
+    dbg("init broken: choices length =", String(choices.length));
+    return;
+  }
+
   clearFeedback();
+
   const [correct, wrong1, wrong2] = shuffle(vowelEntries).slice(0, 3);
   correctKey = correct.key;
   const options = shuffle([correct, wrong1, wrong2]);
-  options.forEach((entry, idx) => {
-    choices[idx].textContent = entry.label;
-    choices[idx].dataset.key = entry.key;
-  });
+
+  renderChoices(options);
+  applyMobileTabIndex();
+  afterRenderBlur();
+
+  // 첫 사용자 제스처 전에는 자동재생하지 않음(모바일 정책)
   playVowel(correctKey).finally(() => {
     isLocked = false;
   });
 }
 
-function clearFeedback() {
-  choices.forEach(btn => {
-    btn.classList.remove("good", "bad");
-  });
-}
-
-function handleChoice(event) {
-  const picked = event.currentTarget.dataset.key;
+function handleChoice(btn) {
+  const picked = btn?.dataset?.key;
   if (!picked) return;
+
   if (isTransitioning) return;
+  userInteracted = true;
+
+  // 잠긴 상태에서 오답 누르면 짧게 오답만 들려주기
   if (isLocked && picked !== correctKey) {
-    event.currentTarget.classList.add("bad");
-    playVowel(picked);
-    setTimeout(() => {
-      event.currentTarget.classList.remove("bad");
-    }, 400);
+    btn.classList.add("bad");
+    playVowel(picked, { force: true });
+    setTimeout(() => btn.classList.remove("bad"), 350);
     return;
   }
+
+  // 여기부터는 "판정" 들어감
   isLocked = true;
-  playVowel(picked);
 
   if (picked === correctKey) {
-    event.currentTarget.classList.add("good");
+    btn.classList.add("good");
     isTransitioning = true;
-    playVowel(correctKey).finally(() => {
-      const delay = 600 + Math.floor(Math.random() * 401);
+
+    // 정답 음성을 끝까지 재생하고 나서 다음 라운드
+    playVowel(correctKey, { force: true, waitEnd: true }).finally(() => {
       setTimeout(() => {
         pickRound();
-      }, delay);
+      }, 600);
     });
-  } else {
-    event.currentTarget.classList.add("bad");
-    setTimeout(() => {
-      event.currentTarget.classList.remove("bad");
-      isLocked = false;
-    }, 400);
+
+    return;
   }
+
+  // 오답 처리
+  btn.classList.add("bad");
+  playVowel(picked, { force: true });
+  setTimeout(() => {
+    btn.classList.remove("bad");
+    isLocked = false;
+  }, 350);
 }
 
-replayBtn.addEventListener("click", () => {
-  if (isTransitioning) return;
-  playVowel(correctKey);
-});
 
-choices.forEach(btn => {
-  btn.addEventListener("click", handleChoice);
-});
+/* =========================================================
+   Event binding (click + pointerup, safe)
+   ========================================================= */
+function bindTap(el, handler) {
+  if (!el) return;
 
-pickRound();
+  const wrapped = (e) => {
+    // iOS/Android에서 중복 트리거 방지
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
+    // 사용자 제스처 플래그
+    userInteracted = true;
+
+    handler(e);
+  };
+
+  // pointerup 우선, click도 함께 (기기별 안정성)
+  el.addEventListener("pointerup", wrapped, { passive: false });
+  el.addEventListener("click", wrapped, { passive: false });
+}
+
+/* =========================================================
+   Init
+   ========================================================= */
+function init() {
+  dbg("boot ok");
+
+  choices = Array.from(document.querySelectorAll(".choiceBtn"));
+  replayBtn = document.getElementById("replayBtn");
+
+  dbg("choices:", String(choices.length), "replayBtn:", replayBtn ? "ok" : "missing");
+
+  if (choices.length !== 3) {
+    dbg("INIT ERROR: expected 3 .choiceBtn, got", String(choices.length));
+    return;
+  }
+  if (!replayBtn) {
+    dbg("INIT ERROR: missing #replayBtn");
+    return;
+  }
+
+  // replay: 항상 현재 correctKey 재생
+  bindTap(replayBtn, () => {
+    dbg("replay tapped. correctKey:", correctKey || "(empty)");
+    if (!correctKey) {
+      pickRound();
+      return;
+    }
+    playVowel(correctKey, { force: true });
+  });
+
+  // choices
+  choices.forEach((btn) => {
+    bindTap(btn, () => handleChoice(btn));
+  });
+
+  // 첫 터치로 userInteracted 세팅 (어디를 눌러도)
+  document.addEventListener(
+    "pointerdown",
+    () => {
+      if (!userInteracted) dbg("user gesture unlocked");
+      userInteracted = true;
+    },
+    { once: true }
+  );
+
+  applyMobileTabIndex();
+  pickRound();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}

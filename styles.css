@@ -30,6 +30,7 @@ body {
   display: grid;
   place-items: center;
   padding: 16px;
+  
 }
 
 .stage {
@@ -63,12 +64,15 @@ body {
   font-size: 22px;
   cursor: pointer;
   transition: transform 0.15s ease, border 0.15s ease, box-shadow 0.15s ease;
+  animation: replayGlow 1.6s infinite;
 }
 
+.replay:focus,
 .replay:focus-visible,
+.choice:focus,
 .choice:focus-visible {
-  outline: 3px solid var(--accent-2);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: none;
 }
 
 .replay:hover {
@@ -153,6 +157,12 @@ body {
   100% { transform: translateX(0); }
 }
 
+@keyframes replayGlow {
+  0% { box-shadow: 0 0 0 0 rgba(61, 217, 255, 0.6); border-color: #345162; }
+  60% { box-shadow: 0 0 0 10px rgba(61, 217, 255, 0); border-color: var(--accent-2); }
+  100% { box-shadow: 0 0 0 0 rgba(61, 217, 255, 0); border-color: #345162; }
+}
+
 @media (max-width: 680px) {
   body {
     padding: 12px;
@@ -173,5 +183,97 @@ body {
   .choice {
     height: 110px;
     min-height: 110px;
+  }
+}
+
+/* =========================
+   Touch devices (Galaxy Chrome 포함)
+   - tap highlight 제거
+   - focus/active에서만 테두리/그림자 제거
+   - sticky hover는 "기본 상태"에만 무력화 (good/bad는 유지)
+   ========================= */
+
+@media (pointer: coarse) {
+  /* 1) 터치 하이라이트만 제거 (상시 box-shadow 제거 금지) */
+  button,
+  .choice,
+  .choiceBtn,
+  .replay,
+  #replayBtn {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+    touch-action: manipulation;
+  }
+
+  /* 2) 선택 버튼만 focus/active에서 box-shadow 제거 */
+  button:active,
+  button:focus,
+  button:focus-visible,
+  .choice:active,
+  .choice:focus,
+  .choice:focus-visible,
+  .choiceBtn:active,
+  .choiceBtn:focus,
+  .choiceBtn:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  /* 2-b) replay는 outline만 제거 (반짝임 유지) */
+  .replay:active,
+  .replay:focus,
+  .replay:focus-visible,
+  #replayBtn:active,
+  #replayBtn:focus,
+  #replayBtn:focus-visible {
+    outline: none !important;
+    /* box-shadow는 제거하지 않음 */
+  }
+
+  /* 2-c) replay active/focus에서도 glow 애니메이션 유지 */
+  .replay:active,
+  .replay:focus,
+  .replay:focus-visible,
+  #replayBtn:active,
+  #replayBtn:focus,
+  #replayBtn:focus-visible {
+    animation: replayGlow 1.6s infinite;
+    box-shadow: 0 0 0 0 rgba(61, 217, 255, 0.6) !important;
+  }
+
+  /* 3) ★ 핵심: sticky hover는 "기본 상태"에만 무력화
+        (good/bad 상태에서는 테두리/애니메이션을 절대 건드리지 않음) */
+  .choice:not(.good):not(.bad):hover {
+    transform: none !important;
+    border-color: #2d4254 !important;
+    box-shadow: none !important;
+  }
+
+  .replay:hover {
+  transform: none !important;
+  border-color: #345162 !important;
+  /* box-shadow 제거 금지: glow 유지 */
+}
+
+}
+
+/* hover:none 판정되는 브라우저에 대한 추가 방어 (pointer:coarse가 더 중요) */
+@media (hover: none) {
+  .choice:not(.good):not(.bad):hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .replay:hover {
+    transform: none !important;
+    /* box-shadow 제거 금지: glow 유지 */
+  }
+}
+
+
+/* 데스크톱: 키보드 포커스 링 유지 */
+@media (hover: hover) and (pointer: fine) {
+  .replay:focus-visible,
+  .choice:focus-visible {
+    outline: 3px solid var(--accent-2);
+    outline-offset: 2px;
   }
 }
