@@ -41,6 +41,38 @@ const vowelEntries = [
   { key: "ui", label: "ㅢ" },
 ];
 
+const level2Syllables = [
+  "가", "나", "다", "라", "마", "바", "사", "아", "자", "차",
+  "카", "타", "파", "하",
+  "까", "따", "빠", "싸", "짜",
+];
+
+const level2Entries = level2Syllables.map((label) => ({ key: label, label }));
+
+const level3Triads = [
+  ["자다", "짜다", "차다"],
+  ["바지다", "빠지다", "파지다"],
+  ["가다", "까다", "카다"],
+  ["다다", "따다", "타다"],
+];
+
+const level3Pairs = [
+  ["사다", "싸다"],
+];
+
+const level3MeaningWords = [
+  "나무",
+  "바다",
+  "사과",
+  "우유",
+  "아기",
+  "나라",
+  "다리",
+  "바나나",
+  "고기",
+  "모자",
+];
+
 const voicePacks = {
   ko: {
     // 반드시 ./ 로 시작 (상대경로 꼬임 방지)
@@ -77,10 +109,15 @@ let activePack = "ko";
    ========================================================= */
 let choices = [];
 let replayBtn = null;
+let levelTabs = [];
+let titleEl = null;
 
 let correctKey = "";
 let isLocked = false;
 let isTransitioning = false;
+let currentLevel = 1;
+let streak = 0;
+let lastLevel3SetKey = "";
 
 // 모바일에서 자동재생 정책 회피:
 // 사용자가 한번이라도 터치/클릭하면 그때부터 자동재생 허용으로 간주
@@ -100,6 +137,69 @@ function shuffle(list) {
     [array[i], array[j]] = [array[j], array[i]];
   }
   return array;
+}
+
+function makeEntries(labels) {
+  return labels.map((label) => ({ key: label, label }));
+}
+
+function pickDifferent(getItem, isSame, limit = 8) {
+  let next = getItem();
+  let tries = 0;
+  while (isSame(next) && tries < limit) {
+    next = getItem();
+    tries += 1;
+  }
+  return next;
+}
+
+function buildLevel1Round() {
+  const [correct, wrong1, wrong2] = shuffle(vowelEntries).slice(0, 3);
+  const options = shuffle([correct, wrong1, wrong2]);
+  return { options, correctKey: correct.key };
+}
+
+function buildLevel2Round() {
+  const [correct, wrong1, wrong2] = shuffle(level2Entries).slice(0, 3);
+  const options = shuffle([correct, wrong1, wrong2]);
+  return { options, correctKey: correct.key };
+}
+
+function buildLevel3Round() {
+  const useTriad = Math.random() < 0.6;
+
+  if (useTriad) {
+    const triad = pickDifferent(
+      () => level3Triads[Math.floor(Math.random() * level3Triads.length)],
+      (next) => `triad:${next.join("|")}` === lastLevel3SetKey
+    );
+    const correctLabel = triad[Math.floor(Math.random() * triad.length)];
+    const options = shuffle(makeEntries(triad));
+    return {
+      options,
+      correctKey: correctLabel,
+      setKey: `triad:${triad.join("|")}`,
+    };
+  }
+
+  const pair = level3Pairs[Math.floor(Math.random() * level3Pairs.length)];
+  const meaning = pickDifferent(
+    () => level3MeaningWords[Math.floor(Math.random() * level3MeaningWords.length)],
+    (next) => `pair:${pair.join("|")}|m:${next}` === lastLevel3SetKey
+  );
+  const correctLabel = pair[Math.floor(Math.random() * pair.length)];
+  const options = shuffle(makeEntries([pair[0], pair[1], meaning]));
+  return {
+    options,
+    correctKey: correctLabel,
+    setKey: `pair:${pair.join("|")}|m:${meaning}`,
+  };
+}
+
+function getRoundByLevel(level) {
+  if (level === 2) return buildLevel2Round();
+  if (level === 3) return buildLevel3Round();
+  return buildLevel1Round();
 }
 
 function getAudioUrl(key) {
@@ -258,11 +358,13 @@ function pickRound() {
 
   clearFeedback();
 
-  const [correct, wrong1, wrong2] = shuffle(vowelEntries).slice(0, 3);
-  correctKey = correct.key;
-  const options = shuffle([correct, wrong1, wrong2]);
+  const round = getRoundByLevel(currentLevel);
+  correctKey = round.correctKey;
+  if (currentLevel === 3 && round.setKey) {
+    lastLevel3SetKey = round.setKey;
+  }
 
-  renderChoices(options);
+  renderChoices(round.options);
   applyMobileTabIndex();
   afterRenderBlur();
 
@@ -284,6 +386,7 @@ function handleChoice(btn) {
     btn.classList.add("bad");
     playVowel(picked, { force: true });
     setTimeout(() => btn.classList.remove("bad"), 350);
+    streak = 0;
     return;
   }
 
@@ -293,10 +396,18 @@ function handleChoice(btn) {
   if (picked === correctKey) {
     btn.classList.add("good");
     isTransitioning = true;
+    streak += 1;
 
     // 정답 음성을 끝까지 재생하고 나서 다음 라운드
     playVowel(correctKey, { force: true, waitEnd: true }).finally(() => {
       setTimeout(() => {
+        if (streak >= 10) {
+          streak = 0;
+          if (currentLevel < 3) {
+            setLevel(currentLevel + 1);
+            return;
+          }
+        }
         pickRound();
       }, 600);
     });
@@ -310,6 +421,7 @@ function handleChoice(btn) {
   setTimeout(() => {
     btn.classList.remove("bad");
     isLocked = false;
+    streak = 0;
   }, 350);
 }
 
@@ -344,6 +456,8 @@ function init() {
 
   choices = Array.from(document.querySelectorAll(".choiceBtn"));
   replayBtn = document.getElementById("replayBtn");
+  levelTabs = Array.from(document.querySelectorAll(".level-tab"));
+  titleEl = document.querySelector(".brand h1");
 
   dbg("choices:", String(choices.length), "replayBtn:", replayBtn ? "ok" : "missing");
 
@@ -355,6 +469,15 @@ function init() {
     dbg("INIT ERROR: missing #replayBtn");
     return;
   }
+
+  if (levelTabs.length === 0) {
+    dbg("INIT ERROR: missing .level-tab");
+    return;
+  }
+
+  levelTabs.forEach((tab) => {
+    bindTap(tab, () => setLevel(tab.dataset.level));
+  });
 
   // replay: 항상 현재 correctKey 재생
   bindTap(replayBtn, () => {
@@ -382,11 +505,33 @@ function init() {
   );
 
   applyMobileTabIndex();
-  pickRound();
+  setLevel(1);
 }
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
 } else {
   init();
+}
+
+/* =========================================================
+   Level UI
+   ========================================================= */
+function setLevel(nextLevel) {
+  const levelNum = Number(nextLevel);
+  if (![1, 2, 3].includes(levelNum)) return;
+  currentLevel = levelNum;
+  streak = 0;
+
+  levelTabs.forEach((tab) => {
+    const tabLevel = Number(tab.dataset.level);
+    if (tabLevel === currentLevel) tab.classList.add("is-active");
+    else tab.classList.remove("is-active");
+  });
+
+  if (titleEl) {
+    titleEl.textContent = `Empareja vocales Nivel ${currentLevel}`;
+  }
+
+  pickRound();
 }

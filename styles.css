@@ -39,6 +39,43 @@ body {
   display: grid;
   gap: 20px;
   align-content: center;
+  position: relative;
+}
+
+.level-tabs {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+  background: rgba(13, 19, 26, 0.7);
+  border: 1px solid #263849;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+
+.level-tab {
+  border: 1px solid #2d4254;
+  background: #0f1821;
+  color: var(--muted);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: border 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.level-tab:hover {
+  border-color: var(--accent-2);
+  color: var(--ink);
+}
+
+.level-tab.is-active {
+  border-color: var(--accent);
+  color: var(--ink);
+  background: #13202c;
 }
 
 .brand {
