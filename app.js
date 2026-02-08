@@ -20,57 +20,90 @@ function dbg() {}
    Data
    ========================================================= */
 const vowelEntries = [
-  { key: "a", label: "ㅏ" },
-  { key: "ya", label: "ㅑ" },
-  { key: "eo", label: "ㅓ" },
-  { key: "yeo", label: "ㅕ" },
-  { key: "o", label: "ㅗ" },
-  { key: "yo", label: "ㅛ" },
-  { key: "u", label: "ㅜ" },
-  { key: "yu", label: "ㅠ" },
-  { key: "eu", label: "ㅡ" },
-  { key: "i", label: "ㅣ" },
-  { key: "ae", label: "ㅐ" },
-  { key: "e", label: "ㅔ" },
-  { key: "wa", label: "ㅘ" },
-  { key: "wae", label: "ㅙ" },
-  { key: "oe", label: "ㅚ" },
-  { key: "wo", label: "ㅝ" },
-  { key: "we", label: "ㅞ" },
-  { key: "wi", label: "ㅟ" },
-  { key: "ui", label: "ㅢ" },
+  { roman: "a", label: "ㅏ", kind: "vowel" },
+  { roman: "ya", label: "ㅑ", kind: "vowel" },
+  { roman: "eo", label: "ㅓ", kind: "vowel" },
+  { roman: "yeo", label: "ㅕ", kind: "vowel" },
+  { roman: "o", label: "ㅗ", kind: "vowel" },
+  { roman: "yo", label: "ㅛ", kind: "vowel" },
+  { roman: "u", label: "ㅜ", kind: "vowel" },
+  { roman: "yu", label: "ㅠ", kind: "vowel" },
+  { roman: "eu", label: "ㅡ", kind: "vowel" },
+  { roman: "i", label: "ㅣ", kind: "vowel" },
+  { roman: "ae", label: "ㅐ", kind: "vowel" },
+  { roman: "e", label: "ㅔ", kind: "vowel" },
+  { roman: "wa", label: "ㅘ", kind: "vowel" },
+  { roman: "wae", label: "ㅙ", kind: "vowel" },
+  { roman: "oe", label: "ㅚ", kind: "vowel" },
+  { roman: "wo", label: "ㅝ", kind: "vowel" },
+  { roman: "we", label: "ㅞ", kind: "vowel" },
+  { roman: "wi", label: "ㅟ", kind: "vowel" },
+  { roman: "ui", label: "ㅢ", kind: "vowel" },
 ];
 
-const level2Syllables = [
-  "가", "나", "다", "라", "마", "바", "사", "아", "자", "차",
-  "카", "타", "파", "하",
-  "까", "따", "빠", "싸", "짜",
+const level2Entries = [
+  { label: "가", roman: "ga", kind: "l2" },
+  { label: "나", roman: "na", kind: "l2" },
+  { label: "다", roman: "da", kind: "l2" },
+  { label: "라", roman: "ra", kind: "l2" },
+  { label: "마", roman: "ma", kind: "l2" },
+  { label: "바", roman: "ba", kind: "l2" },
+  { label: "사", roman: "sa", kind: "l2" },
+  { label: "아", roman: "a", kind: "l2" },
+  { label: "자", roman: "ja", kind: "l2" },
+  { label: "차", roman: "cha", kind: "l2" },
+  { label: "카", roman: "ka", kind: "l2" },
+  { label: "타", roman: "ta", kind: "l2" },
+  { label: "파", roman: "pa", kind: "l2" },
+  { label: "하", roman: "ha", kind: "l2" },
+  { label: "까", roman: "gga", kind: "l2" },
+  { label: "따", roman: "dda", kind: "l2" },
+  { label: "빠", roman: "bba", kind: "l2" },
+  { label: "싸", roman: "ssa", kind: "l2" },
+  { label: "짜", roman: "jja", kind: "l2" },
 ];
-
-const level2Entries = level2Syllables.map((label) => ({ key: label, label }));
 
 const level3Triads = [
-  ["자다", "짜다", "차다"],
-  ["바지다", "빠지다", "파지다"],
-  ["가다", "까다", "카다"],
-  ["다다", "따다", "타다"],
+  [
+    { label: "자다", roman: "jada", kind: "minimal" },
+    { label: "짜다", roman: "jjada", kind: "minimal" },
+    { label: "차다", roman: "chada", kind: "minimal" },
+  ],
+  [
+    { label: "바지다", roman: "bajida", kind: "minimal" },
+    { label: "빠지다", roman: "bbajida", kind: "minimal" },
+    { label: "파지다", roman: "pajida", kind: "minimal" },
+  ],
+  [
+    { label: "가다", roman: "gada", kind: "minimal" },
+    { label: "까다", roman: "ggada", kind: "minimal" },
+    { label: "카다", roman: "kada", kind: "minimal" },
+  ],
+  [
+    { label: "다다", roman: "dada", kind: "minimal" },
+    { label: "따다", roman: "ddada", kind: "minimal" },
+    { label: "타다", roman: "tada", kind: "minimal" },
+  ],
 ];
 
 const level3Pairs = [
-  ["사다", "싸다"],
+  [
+    { label: "사다", roman: "sada", kind: "minimal" },
+    { label: "싸다", roman: "ssada", kind: "minimal" },
+  ],
 ];
 
 const level3MeaningWords = [
-  "나무",
-  "바다",
-  "사과",
-  "우유",
-  "아기",
-  "나라",
-  "다리",
-  "바나나",
-  "고기",
-  "모자",
+  { label: "나무", roman: "namu", kind: "word" },
+  { label: "바다", roman: "bada", kind: "word" },
+  { label: "사과", roman: "sagua", kind: "word" },
+  { label: "우유", roman: "wooyu", kind: "word" },
+  { label: "아기", roman: "agi", kind: "word" },
+  { label: "나라", roman: "nara", kind: "word" },
+  { label: "다리", roman: "dari", kind: "word" },
+  { label: "바나나", roman: "banana", kind: "word" },
+  { label: "고기", roman: "gogi", kind: "word" },
+  { label: "모자", roman: "moja", kind: "word" },
 ];
 
 const voicePacks = {
@@ -112,7 +145,7 @@ let replayBtn = null;
 let levelTabs = [];
 let titleEl = null;
 
-let correctKey = "";
+let correctEntry = null;
 let isLocked = false;
 let isTransitioning = false;
 let currentLevel = 1;
@@ -139,10 +172,6 @@ function shuffle(list) {
   return array;
 }
 
-function makeEntries(labels) {
-  return labels.map((label) => ({ key: label, label }));
-}
-
 function pickDifferent(getItem, isSame, limit = 8) {
   let next = getItem();
   let tries = 0;
@@ -156,13 +185,13 @@ function pickDifferent(getItem, isSame, limit = 8) {
 function buildLevel1Round() {
   const [correct, wrong1, wrong2] = shuffle(vowelEntries).slice(0, 3);
   const options = shuffle([correct, wrong1, wrong2]);
-  return { options, correctKey: correct.key };
+  return { options, correctEntry: correct };
 }
 
 function buildLevel2Round() {
   const [correct, wrong1, wrong2] = shuffle(level2Entries).slice(0, 3);
   const options = shuffle([correct, wrong1, wrong2]);
-  return { options, correctKey: correct.key };
+  return { options, correctEntry: correct };
 }
 
 function buildLevel3Round() {
@@ -173,26 +202,26 @@ function buildLevel3Round() {
       () => level3Triads[Math.floor(Math.random() * level3Triads.length)],
       (next) => `triad:${next.join("|")}` === lastLevel3SetKey
     );
-    const correctLabel = triad[Math.floor(Math.random() * triad.length)];
-    const options = shuffle(makeEntries(triad));
+    const correct = triad[Math.floor(Math.random() * triad.length)];
+    const options = shuffle(triad);
     return {
       options,
-      correctKey: correctLabel,
-      setKey: `triad:${triad.join("|")}`,
+      correctEntry: correct,
+      setKey: `triad:${triad.map((t) => t.roman).join("|")}`,
     };
   }
 
   const pair = level3Pairs[Math.floor(Math.random() * level3Pairs.length)];
   const meaning = pickDifferent(
     () => level3MeaningWords[Math.floor(Math.random() * level3MeaningWords.length)],
-    (next) => `pair:${pair.join("|")}|m:${next}` === lastLevel3SetKey
+    (next) => `pair:${pair.map((p) => p.roman).join("|")}|m:${next.roman}` === lastLevel3SetKey
   );
-  const correctLabel = pair[Math.floor(Math.random() * pair.length)];
-  const options = shuffle(makeEntries([pair[0], pair[1], meaning]));
+  const correct = pair[Math.floor(Math.random() * pair.length)];
+  const options = shuffle([pair[0], pair[1], meaning]);
   return {
     options,
-    correctKey: correctLabel,
-    setKey: `pair:${pair.join("|")}|m:${meaning}`,
+    correctEntry: correct,
+    setKey: `pair:${pair.map((p) => p.roman).join("|")}|m:${meaning.roman}`,
   };
 }
 
@@ -202,10 +231,26 @@ function getRoundByLevel(level) {
   return buildLevel1Round();
 }
 
-function getAudioUrl(key) {
+function getAudioUrl(entry, level) {
+  if (!entry || !entry.roman) return null;
+
+  if (level === 2) {
+    return `./audio/ko/level2/l2_${entry.roman}.m4a`;
+  }
+
+  if (level === 3) {
+    if (entry.kind === "minimal") {
+      return `./audio/ko/level3/minimal/l3_min_${entry.roman}.m4a`;
+    }
+    if (entry.kind === "word") {
+      return `./audio/ko/level3/word/l3_word_${entry.roman}.m4a`;
+    }
+    return null;
+  }
+
   const pack = voicePacks[activePack];
   if (!pack) return null;
-  const filename = pack.files[key];
+  const filename = pack.files[entry.roman];
   if (!filename) return null;
   return `${pack.basePath}/${filename}`;
 }
@@ -232,11 +277,11 @@ function stopAudio() {
   } catch (_) {}
 }
 
-function playVowel(key, { force = false, waitEnd = false } = {}) {
+function playVowel(entry, { force = false, waitEnd = false } = {}) {
   return new Promise((resolve) => {
-    const src = getAudioUrl(key);
+    const src = getAudioUrl(entry, currentLevel);
     if (!src) {
-      dbg("audio missing for key:", key);
+      dbg("audio missing for entry:", entry?.roman || "(empty)");
       resolve(false);
       return;
     }
@@ -335,7 +380,8 @@ function renderChoices(entries3) {
     const btn = choices[idx];
     if (!btn) return;
     btn.textContent = entry.label;
-    btn.dataset.key = entry.key;
+    btn.dataset.roman = entry.roman;
+    btn.dataset.kind = entry.kind || "vowel";
   });
 
   dbg(
@@ -359,7 +405,7 @@ function pickRound() {
   clearFeedback();
 
   const round = getRoundByLevel(currentLevel);
-  correctKey = round.correctKey;
+  correctEntry = round.correctEntry;
   if (currentLevel === 3 && round.setKey) {
     lastLevel3SetKey = round.setKey;
   }
@@ -369,22 +415,24 @@ function pickRound() {
   afterRenderBlur();
 
   // 첫 사용자 제스처 전에는 자동재생하지 않음(모바일 정책)
-  playVowel(correctKey).finally(() => {
+  playVowel(correctEntry).finally(() => {
     isLocked = false;
   });
 }
 
 function handleChoice(btn) {
-  const picked = btn?.dataset?.key;
-  if (!picked) return;
+  const pickedRoman = btn?.dataset?.roman;
+  const pickedKind = btn?.dataset?.kind;
+  if (!pickedRoman) return;
+  const pickedEntry = { roman: pickedRoman, kind: pickedKind || "vowel" };
 
   if (isTransitioning) return;
   userInteracted = true;
 
   // 잠긴 상태에서 오답 누르면 짧게 오답만 들려주기
-  if (isLocked && picked !== correctKey) {
+  if (isLocked && (!correctEntry || pickedEntry.roman !== correctEntry.roman || pickedEntry.kind !== correctEntry.kind)) {
     btn.classList.add("bad");
-    playVowel(picked, { force: true });
+    playVowel(pickedEntry, { force: true });
     setTimeout(() => btn.classList.remove("bad"), 350);
     streak = 0;
     return;
@@ -393,13 +441,13 @@ function handleChoice(btn) {
   // 여기부터는 "판정" 들어감
   isLocked = true;
 
-  if (picked === correctKey) {
+  if (correctEntry && pickedEntry.roman === correctEntry.roman && pickedEntry.kind === correctEntry.kind) {
     btn.classList.add("good");
     isTransitioning = true;
     streak += 1;
 
     // 정답 음성을 끝까지 재생하고 나서 다음 라운드
-    playVowel(correctKey, { force: true, waitEnd: true }).finally(() => {
+    playVowel(correctEntry, { force: true, waitEnd: true }).finally(() => {
       setTimeout(() => {
         if (streak >= 10) {
           streak = 0;
@@ -417,7 +465,7 @@ function handleChoice(btn) {
 
   // 오답 처리
   btn.classList.add("bad");
-  playVowel(picked, { force: true });
+  playVowel(pickedEntry, { force: true });
   setTimeout(() => {
     btn.classList.remove("bad");
     isLocked = false;
@@ -481,12 +529,12 @@ function init() {
 
   // replay: 항상 현재 correctKey 재생
   bindTap(replayBtn, () => {
-    dbg("replay tapped. correctKey:", correctKey || "(empty)");
-    if (!correctKey) {
+    dbg("replay tapped. correctEntry:", correctEntry?.roman || "(empty)");
+    if (!correctEntry) {
       pickRound();
       return;
     }
-    playVowel(correctKey, { force: true });
+    playVowel(correctEntry, { force: true });
   });
 
   // choices
