@@ -195,13 +195,23 @@ function buildLevel2Round() {
 }
 
 function buildLevel3Round() {
-  const useTriad = Math.random() < 0.6;
+  const sets = [
+    ...level3Triads.map((triad) => ({ type: "triad", triad })),
+    ...level3Pairs.map((pair) => ({ type: "pair", pair })),
+  ];
 
-  if (useTriad) {
-    const triad = pickDifferent(
-      () => level3Triads[Math.floor(Math.random() * level3Triads.length)],
-      (next) => `triad:${next.join("|")}` === lastLevel3SetKey
-    );
+  const pickedSet = pickDifferent(
+    () => sets[Math.floor(Math.random() * sets.length)],
+    (next) => {
+      if (next.type === "triad") {
+        return `triad:${next.triad.map((t) => t.roman).join("|")}` === lastLevel3SetKey;
+      }
+      return `pair:${next.pair.map((p) => p.roman).join("|")}` === lastLevel3SetKey;
+    }
+  );
+
+  if (pickedSet.type === "triad") {
+    const triad = pickedSet.triad;
     const correct = triad[Math.floor(Math.random() * triad.length)];
     const options = shuffle(triad);
     return {
@@ -211,7 +221,7 @@ function buildLevel3Round() {
     };
   }
 
-  const pair = level3Pairs[Math.floor(Math.random() * level3Pairs.length)];
+  const pair = pickedSet.pair;
   const meaning = pickDifferent(
     () => level3MeaningWords[Math.floor(Math.random() * level3MeaningWords.length)],
     (next) => `pair:${pair.map((p) => p.roman).join("|")}|m:${next.roman}` === lastLevel3SetKey
