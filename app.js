@@ -235,15 +235,15 @@ function getAudioUrl(entry, level) {
   if (!entry || !entry.roman) return null;
 
   if (level === 2) {
-    return `./audio/ko/level2/l2_${entry.roman}.m4a`;
+    return `./audio/ko/level2/l2_${entry.roman}.mkv`;
   }
 
   if (level === 3) {
     if (entry.kind === "minimal") {
-      return `./audio/ko/level3/minimal/l3_min_${entry.roman}.m4a`;
+      return `./audio/ko/level3/minimal/l3_min_${entry.roman}.mkv`;
     }
     if (entry.kind === "word") {
-      return `./audio/ko/level3/word/l3_word_${entry.roman}.m4a`;
+      return `./audio/ko/level3/word/l3_word_${entry.roman}.mkv`;
     }
     return null;
   }
@@ -252,7 +252,7 @@ function getAudioUrl(entry, level) {
   if (!pack) return null;
   const filename = pack.files[entry.roman];
   if (!filename) return null;
-  return `${pack.basePath}/${filename}`;
+  return `${pack.basePath}/${filename.replace(/\.m4a$/i, ".mkv")}`;
 }
 
 /* =========================================================
