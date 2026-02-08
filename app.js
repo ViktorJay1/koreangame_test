@@ -77,7 +77,7 @@ const level3Triads = [
   [
     { label: "가다", roman: "gada", kind: "minimal" },
     { label: "까다", roman: "ggada", kind: "minimal" },
-    { label: "카다", roman: "kada", kind: "minimal" },
+    { label: "카다", roman: "cada", kind: "minimal" },
   ],
   [
     { label: "다다", roman: "dada", kind: "minimal" },
@@ -288,7 +288,7 @@ function playVowel(entry, { force = false, waitEnd = false } = {}) {
 
     // 자동재생은 첫 터치 전에는 막힐 수 있음
     if (!userInteracted && !force) {
-      dbg("autoplay blocked until user gesture. key:", key);
+      dbg("autoplay blocked until user gesture. entry:", entry?.roman || "(empty)");
       resolve(false);
       return;
     }
